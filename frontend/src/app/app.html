@@ -1,0 +1,24 @@
+<a class="skip-link" href="#main">{{ 'app.skipToContent' | t }}</a>
+
+<header class="app-header">
+  <div class="app-header__inner">
+    <a class="app-brand" routerLink="/" [attr.aria-label]="'nav.home' | t">
+      <span class="app-brand__mark" aria-hidden="true">÷</span>
+      <span class="app-brand__text">
+        <span class="app-brand__name">{{ 'app.name' | t }}</span>
+        <span class="app-brand__tagline">{{ 'app.tagline' | t }}</span>
+      </span>
+    </a>
+    <app-locale-switcher />
+  </div>
+</header>
+
+<main id="main" class="app-main" tabindex="-1">
+  <router-outlet />
+</main>
+
+<footer class="app-footer">
+  <p>{{ 'app.footer' | t }}</p>
+</footer>
+
+<p-toast position="bottom-right" />
