@@ -6,9 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * The only source of a datasource in this project: there is no compose file and no
- * {@code spring.datasource.*} in application.properties. Imported by the integration test
- * and by {@link TestSplitApplication} for local runs, so both hit the same Postgres.
+ * The only source of a datasource for tests and local runs: there is no
+ * {@code spring.datasource.*} in application.properties. The compose file at the root sets
+ * those properties, but it describes a deployed stack and never takes part here. Imported
+ * by the integration test and by {@link TestSplitApplication}, so both hit the same
+ * Postgres.
  */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {

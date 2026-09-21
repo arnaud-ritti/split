@@ -1,0 +1,79 @@
+# Pile complète : Postgres, l'API Spring et le front Angular, les deux images construites
+# depuis ce dépôt. Pensée pour le build pack « Docker Compose » de Coolify.
+#
+# Les variables SERVICE_* sont générées par Coolify au premier déploiement, puis restent
+# stables : un mot de passe de base n'est pas régénéré à chaque déploiement. Hors Coolify,
+# il faut les fournir soi-même (voir README, section « Hors Coolify »).
+#
+# Aucun port n'est publié sur l'hôte : le proxy de Coolify joint les conteneurs par le
+# réseau de la ressource, et Postgres n'a aucune raison d'être joignable de l'extérieur.
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      - POSTGRES_DB=split
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      # Depuis Postgres 18, l'image veut le montage un cran au-dessus de data/ : elle y
+      # crée un sous-dossier par version majeure, pour que pg_upgrade --link fonctionne.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      # -d vise la vraie base : pendant l'initdb, Postgres écoute déjà mais `split`
+      # n'existe pas encore, et l'API partirait alors sur une base absente.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Domaine public de l'API. Coolify retire le préfixe /api avant de transmettre :
+      # les contrôleurs sont mappés à la racine (/groups…), exactement ce que fait
+      # proxy.conf.json en développement.
+      - SERVICE_FQDN_API_8080=/api
+      # Il n'y a pas de spring.datasource.* dans application.properties : en local la
+      # base vient de Testcontainers, ici de ces trois variables.
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/split
+      - SPRING_DATASOURCE_USERNAME=${SERVICE_USER_POSTGRES}
+      - SPRING_DATASOURCE_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # Liquibase migre au démarrage, d'où le start_period large : tant qu'il tourne,
+      # l'application n'écoute pas encore.
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      # Le domaine du site. Celui de l'API doit être le même, au /api près : le
+      # navigateur appelle /api/** sur sa propre origine.
+      - SERVICE_FQDN_WEB_4000
+      # Angular répond 400 à tout Host qu'il ne connaît pas ; sans cette valeur, aucune
+      # requête ne passe.
+      - NG_ALLOWED_HOSTS=${SERVICE_FQDN_WEB_4000}
+      # Sinon les en-têtes X-Forwarded-* sont ignorés et l'application se croit servie
+      # en http sur un hôte interne.
+      - NG_TRUST_PROXY_HEADERS=x-forwarded-host,x-forwarded-proto
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

@@ -18,6 +18,57 @@ et pour le run local.
 
 Swagger UI : <http://localhost:8080/swagger-ui.html>
 
+## Déploiement
+
+`docker-compose.yaml` à la racine décrit la pile entière — Postgres, l'API, le front — et
+construit les deux images depuis ce dépôt : `api` avec le `Dockerfile` racine, `web` avec
+`frontend/Dockerfile`. Aucun port n'est publié sur l'hôte ; le proxy joint les conteneurs
+par le réseau de la ressource.
+
+Le navigateur appelle `/api/**` sur sa propre origine : **les deux services partagent un
+seul domaine**, le front à la racine et l'API sous `/api`, que le proxy retire avant de
+transmettre. C'est ce que fait déjà `proxy.conf.json` en développement, et c'est ce qui
+évite CORS.
+
+### Coolify
+
+Nouvelle ressource → **Docker Compose**, le dépôt, `/docker-compose.yaml`. Coolify génère
+`SERVICE_USER_POSTGRES` et `SERVICE_PASSWORD_POSTGRES` au premier déploiement et les
+conserve ensuite.
+
+Une seule chose est à faire à la main, dans **Environment Variables**, parce que Coolify
+attribue par défaut un domaine distinct par service :
+
+| Variable | Valeur |
+|---|---|
+| `SERVICE_FQDN_WEB_4000` | `https://split.example.com` |
+| `SERVICE_FQDN_API_8080` | `https://split.example.com/api` — **le même hôte** |
+
+Traefik route la règle la plus spécifique en premier, donc `/api` va à l'API et tout le
+reste au front. `NG_ALLOWED_HOSTS` se déduit de la première variable : inutile d'y toucher.
+
+### Hors Coolify
+
+Les quatre variables ci-dessus n'ont rien de spécifique à Coolify, il faut simplement les
+fournir. Pour un essai local, un fichier d'override suffit à publier les ports :
+
+```yaml
+# docker-compose.override.yaml
+services:
+  web:
+    ports: ["4000:4000"]
+  api:
+    ports: ["8080:8080"]
+```
+
+```bash
+SERVICE_USER_POSTGRES=split SERVICE_PASSWORD_POSTGRES=split SERVICE_FQDN_WEB_4000=localhost docker compose up --build
+```
+
+L'API est alors sur `:8080` sans préfixe et le front sur `:4000` — mais son `/api` ne mène
+nulle part sans un proxy devant. Pour développer, `./mvnw spring-boot:test-run` et
+`npm start` restent la boucle courte.
+
 ## API
 
 | Méthode | Chemin | |
