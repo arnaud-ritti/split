@@ -135,3 +135,12 @@ Temporary Items
 
 # Git directories
 .git/
+
+### Spring Boot template
+
+# Spring Boot
+target/
+
+### Frontend template
+
+frontend/
