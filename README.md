@@ -36,21 +36,43 @@ Nouvelle ressource → **Docker Compose**, le dépôt, `/docker-compose.yaml`. C
 `SERVICE_USER_POSTGRES` et `SERVICE_PASSWORD_POSTGRES` au premier déploiement et les
 conserve ensuite.
 
-Une seule chose est à faire à la main, dans **Environment Variables**, parce que Coolify
-attribue par défaut un domaine distinct par service :
+Trois variables sont à renseigner à la main dans **Environment Variables**, parce que
+Coolify attribue par défaut un domaine distinct par service :
 
-| Variable | Valeur |
-|---|---|
-| `SERVICE_FQDN_WEB_4000` | `https://split.example.com` |
-| `SERVICE_FQDN_API_8080` | `https://split.example.com/api` — **le même hôte** |
+| Variable | Valeur | |
+|---|---|---|
+| `SERVICE_FQDN_WEB_4000` | `https://split.example.com` | le domaine du front |
+| `SERVICE_FQDN_API_8080` | `https://split.example.com/api` | **le même hôte**, au chemin près |
+| `NG_ALLOWED_HOSTS` | `split.example.com` | le nom d'hôte **nu** |
 
 Traefik route la règle la plus spécifique en premier, donc `/api` va à l'API et tout le
-reste au front. `NG_ALLOWED_HOSTS` se déduit de la première variable : inutile d'y toucher.
+reste au front.
+
+La troisième n'est pas une redite de la première : Angular compare cette valeur à l'en-tête
+`Host`, qui ne porte jamais de schéma. `https://split.example.com` y est aussi faux qu'une
+valeur vide, et les deux donnent la même réponse à chaque requête :
+
+```
+Header "host" with value "split.example.com" is not allowed.
+```
+
+D'où une variable à part, plutôt qu'une dérivation de `SERVICE_FQDN_WEB_4000` dont la forme
+exacte appartient à Coolify.
+
+Rien à configurer du côté de `API_BASE_URL` : c'est un `InjectionToken` Angular, pas une
+variable d'environnement, et il vaut `/api` par défaut. Le mettre dans le `docker-compose`
+n'aurait aucun effet — le bundle est déjà construit et ne lit pas l'environnement du
+conteneur. C'est précisément ce que le domaine unique achète : l'URL est relative, donc
+juste partout, sans build par environnement ni CORS.
+
+Servir l'API sur un domaine à part (`api.example.com`) demanderait l'inverse : surcharger
+le token à la racine de l'application, et ouvrir CORS côté Spring.
 
 ### Hors Coolify
 
-Les quatre variables ci-dessus n'ont rien de spécifique à Coolify, il faut simplement les
-fournir. Pour un essai local, un fichier d'override suffit à publier les ports :
+Aucune des variables ci-dessus n'est propre à Coolify, il faut simplement les fournir —
+les deux `SERVICE_FQDN_*` n'ont même de sens que s'il y a un proxy devant. Pour un essai
+local, un fichier d'override suffit à publier les ports :
 
 ```yaml
 # docker-compose.override.yaml
@@ -62,7 +84,7 @@ services:
 ```
 
 ```bash
-SERVICE_USER_POSTGRES=split SERVICE_PASSWORD_POSTGRES=split SERVICE_FQDN_WEB_4000=localhost docker compose up --build
+SERVICE_USER_POSTGRES=split SERVICE_PASSWORD_POSTGRES=split NG_ALLOWED_HOSTS=localhost docker compose up --build
 ```
 
 L'API est alors sur `:8080` sans préfixe et le front sur `:4000` — mais son `/api` ne mène

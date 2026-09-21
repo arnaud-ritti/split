@@ -61,12 +61,15 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      # Le domaine du site. Celui de l'API doit être le même, au /api près : le
-      # navigateur appelle /api/** sur sa propre origine.
+      # Le domaine du site, celui sur lequel le proxy route. Celui de l'API doit être le
+      # même, au /api près : le navigateur appelle /api/** sur sa propre origine.
       - SERVICE_FQDN_WEB_4000
-      # Angular répond 400 à tout Host qu'il ne connaît pas ; sans cette valeur, aucune
-      # requête ne passe.
-      - NG_ALLOWED_HOSTS=${SERVICE_FQDN_WEB_4000}
+      # Le nom d'hôte servi, **nu** : ni schéma, ni port, ni chemin. Angular répond 400 à
+      # tout Host qu'il ne reconnaît pas, et `https://exemple.tld` n'est pas un Host — une
+      # valeur vide et une valeur préfixée rejettent donc l'une comme l'autre tout le
+      # trafic. Variable distincte de SERVICE_FQDN_WEB_4000 justement parce que la forme
+      # exacte de cette dernière appartient à Coolify ; ici il faut « exemple.tld ».
+      - NG_ALLOWED_HOSTS=${NG_ALLOWED_HOSTS}
       # Sinon les en-têtes X-Forwarded-* sont ignorés et l'application se croit servie
       # en http sur un hôte interne.
       - NG_TRUST_PROXY_HEADERS=x-forwarded-host,x-forwarded-proto
