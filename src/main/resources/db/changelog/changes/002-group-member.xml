@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="002-group-member" author="split">
+        <createTable tableName="group_member">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" primaryKeyName="pk_group_member"/>
+            </column>
+            <column name="group_id" type="uuid">
+                <constraints nullable="false"
+                             foreignKeyName="fk_group_member_group"
+                             references="expense_group(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="group_member"
+                             columnNames="group_id, name"
+                             constraintName="uq_group_member_group_name"/>
+        <createIndex tableName="group_member" indexName="idx_group_member_group">
+            <column name="group_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
