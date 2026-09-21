@@ -1,0 +1,46 @@
+.expense-form__title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.expense-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Matched to the Optimus text inputs beside it, using the theme's own variables. */
+.field__select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--p-inputtext-border-color, var(--p-content-border-color));
+  border-radius: var(--p-inputtext-border-radius, var(--p-border-radius-md));
+  background: var(--p-inputtext-background, var(--p-content-background));
+  color: inherit;
+  font: inherit;
+}
+
+.participants {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.participants__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-block: 0.5rem;
+}
+
+.participants__option {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.9375rem;
+}
+
+.participants__option input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--p-primary-color);
+}

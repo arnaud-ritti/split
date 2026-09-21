@@ -1,0 +1,111 @@
+<p-card>
+  <ng-template #title>
+    <h2 class="expense-form__title">{{ 'expenseForm.title' | t }}</h2>
+  </ng-template>
+
+  @if (!hasMembers()) {
+    <p-message severity="warn">{{ 'expenseForm.needsMembers' | t }}</p-message>
+  } @else {
+    <form class="expense-form" (submit)="submitExpense($event)">
+      <div class="field">
+        <label class="field__label" for="expense-description">
+          {{ 'expenseForm.description' | t }}
+          <span class="field__required" aria-hidden="true">*</span>
+        </label>
+        <input
+          pInputText
+          id="expense-description"
+          autocomplete="off"
+          [formField]="expenseForm.description"
+          [class.is-invalid]="!!descriptionError()"
+          [placeholder]="'expenseForm.descriptionPlaceholder' | t"
+          [attr.aria-invalid]="descriptionError() ? 'true' : null"
+          [attr.aria-describedby]="descriptionError() ? 'expense-description-error' : null"
+        />
+        @if (descriptionError()) {
+          <p class="field__error" id="expense-description-error">{{ descriptionError() }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="expense-amount">
+          {{ 'expenseForm.amount' | t }}
+          <span class="field__required" aria-hidden="true">*</span>
+        </label>
+        <input
+          pInputText
+          id="expense-amount"
+          type="number"
+          step="0.01"
+          inputmode="decimal"
+          autocomplete="off"
+          [formField]="expenseForm.amount"
+          [class.is-invalid]="!!amountError()"
+          [attr.aria-invalid]="amountError() ? 'true' : null"
+          [attr.aria-describedby]="amountError() ? 'expense-amount-error' : null"
+        />
+        @if (amountError()) {
+          <p class="field__error" id="expense-amount-error">{{ amountError() }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="expense-payer">
+          {{ 'expenseForm.payer' | t }}
+          <span class="field__required" aria-hidden="true">*</span>
+        </label>
+        <select
+          class="field__select"
+          id="expense-payer"
+          [formField]="expenseForm.payerId"
+          [attr.aria-invalid]="payerError() ? 'true' : null"
+          [attr.aria-describedby]="payerError() ? 'expense-payer-error' : null"
+        >
+          <option value="">{{ 'expenseForm.payerPlaceholder' | t }}</option>
+          @for (member of members(); track member.id) {
+            <option [value]="member.id">{{ member.name }}</option>
+          }
+        </select>
+        @if (payerError()) {
+          <p class="field__error" id="expense-payer-error">{{ payerError() }}</p>
+        }
+      </div>
+
+      <fieldset class="participants" [attr.aria-describedby]="participantsDescribedBy()">
+        <legend class="field__label">
+          {{ 'expenseForm.participants' | t }}
+          <span class="field__required" aria-hidden="true">*</span>
+        </legend>
+
+        <div class="participants__options">
+          @for (member of members(); track member.id) {
+            <label class="participants__option">
+              <input
+                type="checkbox"
+                [checked]="isParticipant(member.id)"
+                (change)="toggleParticipant(member.id, $event)"
+              />
+              <span>{{ member.name }}</span>
+            </label>
+          }
+        </div>
+
+        <p class="field__hint" id="expense-participants-hint">
+          {{ 'expenseForm.participantsHelp' | t }}
+        </p>
+        @if (participantsError()) {
+          <p class="field__error" id="expense-participants-error">{{ participantsError() }}</p>
+        }
+      </fieldset>
+
+      <div class="form-actions">
+        <button pButton type="submit" [loading]="saving()">
+          <span pButtonLabel>{{ 'expenseForm.submit' | t }}</span>
+        </button>
+        <button pButton type="button" severity="secondary" [text]="true" (click)="selectEveryone()">
+          <span pButtonLabel>{{ 'expenseForm.selectAll' | t }}</span>
+        </button>
+      </div>
+    </form>
+  }
+</p-card>
