@@ -1,0 +1,115 @@
+<h1 class="home__heading">{{ 'home.heading' | t }}</h1>
+<p class="home__intro">{{ 'home.intro' | t }}</p>
+
+<div class="home__grid">
+  <p-card>
+    <ng-template #title>
+      <h2 class="home__card-title">{{ 'home.create.title' | t }}</h2>
+    </ng-template>
+    <form class="home__form" (submit)="createGroup($event)">
+      <div class="field">
+        <label class="field__label" for="new-group-name">
+          {{ 'home.create.nameLabel' | t }}
+          <span class="field__required" aria-hidden="true">*</span>
+        </label>
+        <input
+          pInputText
+          id="new-group-name"
+          autocomplete="off"
+          [formField]="createForm.name"
+          [class.is-invalid]="!!nameError()"
+          [placeholder]="'home.create.namePlaceholder' | t"
+          [attr.aria-invalid]="nameError() ? 'true' : null"
+          [attr.aria-describedby]="nameError() ? 'new-group-name-error' : null"
+        />
+        @if (nameError()) {
+          <p class="field__error" id="new-group-name-error">{{ nameError() }}</p>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button pButton type="submit" [loading]="creating()">
+          <span pButtonLabel>{{ 'home.create.submit' | t }}</span>
+        </button>
+      </div>
+    </form>
+  </p-card>
+
+  <p-card>
+    <ng-template #title>
+      <h2 class="home__card-title">{{ 'home.open.title' | t }}</h2>
+    </ng-template>
+    <form class="home__form" (submit)="openGroup($event)">
+      <div class="field">
+        <label class="field__label" for="open-group-id">
+          {{ 'home.open.idLabel' | t }}
+          <span class="field__required" aria-hidden="true">*</span>
+        </label>
+        <input
+          pInputText
+          id="open-group-id"
+          autocomplete="off"
+          spellcheck="false"
+          [formField]="openForm.groupId"
+          [class.is-invalid]="!!groupIdError()"
+          placeholder="00000000-0000-0000-0000-000000000000"
+          [attr.aria-invalid]="groupIdError() ? 'true' : null"
+          [attr.aria-describedby]="groupIdError() ? 'open-group-id-error' : null"
+        />
+        @if (groupIdError()) {
+          <p class="field__error" id="open-group-id-error">{{ groupIdError() }}</p>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button pButton type="submit" severity="secondary" [loading]="opening()">
+          <span pButtonLabel>{{ 'home.open.submit' | t }}</span>
+        </button>
+      </div>
+    </form>
+  </p-card>
+</div>
+
+<section class="home__recent" aria-labelledby="recent-groups-heading">
+  <div class="home__recent-header">
+    <h2 id="recent-groups-heading">{{ 'home.recent.title' | t }}</h2>
+    @if (recent.groups().length) {
+      <button
+        pButton
+        type="button"
+        severity="secondary"
+        [text]="true"
+        size="small"
+        (click)="recent.clear()"
+      >
+        <span pButtonLabel>{{ 'home.recent.clear' | t }}</span>
+      </button>
+    }
+  </div>
+
+  @if (recent.groups().length) {
+    <ul class="home__recent-list">
+      @for (group of recent.groups(); track group.id) {
+        <li class="home__recent-item">
+          <a class="home__recent-link" [routerLink]="['/groups', group.id]">
+            <span class="home__recent-name">{{ group.name }}</span>
+            <span class="home__recent-date">{{ group.visitedAt | localDate: 'dateTime' }}</span>
+          </a>
+          <button
+            pButton
+            type="button"
+            severity="secondary"
+            [text]="true"
+            size="small"
+            [attr.aria-label]="'home.recent.forget' | t: { name: group.name }"
+            (click)="recent.forget(group.id)"
+          >
+            <span pButtonLabel aria-hidden="true">✕</span>
+          </button>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p-message severity="secondary" variant="simple">{{ 'home.recent.empty' | t }}</p-message>
+  }
+</section>
