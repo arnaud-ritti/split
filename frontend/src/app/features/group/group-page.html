@@ -1,0 +1,67 @@
+@if (group.isLoading() && !group.hasValue()) {
+  <div class="group__status" role="status">
+    <p-progress-spinner [style]="{ width: '2.5rem', height: '2.5rem' }" strokeWidth="4" />
+    <p>{{ 'group.loading' | t }}</p>
+  </div>
+} @else if (errorMessage()) {
+  <div class="group__status">
+    <p-message severity="error">{{ errorMessage() }}</p-message>
+    <div class="form-actions">
+      <button pButton type="button" severity="secondary" (click)="reload()">
+        <span pButtonLabel>{{ 'group.retry' | t }}</span>
+      </button>
+      <a pButton routerLink="/" severity="secondary" [text]="true">
+        <span pButtonLabel>{{ 'nav.backToHome' | t }}</span>
+      </a>
+    </div>
+  </div>
+} @else if (group.value(); as currentGroup) {
+  <header class="group__header">
+    <div>
+      <h1 class="group__name">{{ currentGroup.name }}</h1>
+      <p class="group__meta">
+        {{ createdAtLabel() }} ·
+        {{ 'members.count' | t: { count: currentGroup.members.length } }}
+      </p>
+    </div>
+    <a pButton routerLink="/" severity="secondary" [text]="true" size="small">
+      <span pButtonLabel>{{ 'nav.backToHome' | t }}</span>
+    </a>
+  </header>
+
+  <p class="group__id">
+    <span class="group__id-label">{{ 'group.identifier' | t }}</span>
+    <code>{{ currentGroup.id }}</code>
+    <button
+      pButton
+      type="button"
+      severity="secondary"
+      [text]="true"
+      size="small"
+      (click)="copyId()"
+    >
+      <span pButtonLabel>{{ 'group.copyId' | t }}</span>
+    </button>
+  </p>
+
+  <div class="group__layout">
+    <div class="group__column">
+      <app-expense-form
+        [members]="currentGroup.members"
+        [saving]="addingExpense()"
+        (create)="addExpense($event)"
+      />
+      <app-expenses-table [expenses]="expenses.value()" />
+    </div>
+
+    <div class="group__column">
+      <app-members-panel
+        [members]="currentGroup.members"
+        [saving]="addingMember()"
+        (add)="addMember($event)"
+      />
+      <app-balances-panel [balances]="balances.value()" />
+      <app-settlements-panel [settlement]="settlements.value()" />
+    </div>
+  </div>
+}
