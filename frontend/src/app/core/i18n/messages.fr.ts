@@ -14,6 +14,7 @@ export const MESSAGES_FR = {
 
   'nav.home': 'Accueil',
   'nav.backToHome': 'Retour à l’accueil',
+  'nav.source': 'Code source sur GitHub',
 
   'home.heading': 'Vos groupes',
   'home.intro':

@@ -9,6 +9,7 @@ export const MESSAGES_EN: MessageCatalogue = {
 
   'nav.home': 'Home',
   'nav.backToHome': 'Back to home',
+  'nav.source': 'Source code on GitHub',
 
   'home.heading': 'Your groups',
   'home.intro':

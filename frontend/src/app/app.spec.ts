@@ -40,6 +40,24 @@ describe('App', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Skip to main content');
   });
 
+  it('links to the repository, labelled in the active locale', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const link = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>(
+      '.app-header__actions a[href*="github.com"]',
+    );
+
+    expect(link?.getAttribute('href')).toBe('https://github.com/arnaud-ritti/split');
+    // Opening a new tab without `noopener` would hand the target a live `window.opener`.
+    expect(link?.getAttribute('rel')).toContain('noopener');
+    expect(link?.getAttribute('aria-label')).toBe('Code source sur GitHub');
+
+    TestBed.inject(I18nService).setLocale('en');
+    await fixture.whenStable();
+
+    expect(link?.getAttribute('aria-label')).toBe('Source code on GitHub');
+  });
+
   it('offers every shipped locale as a toggle', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
