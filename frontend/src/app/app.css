@@ -48,8 +48,9 @@
   gap: 0.5rem;
 }
 
-/* The mark is a square glyph; centring it beats the label padding a button assumes. */
-.app-header__actions svg {
+/* Icons are square marks; centring them beats the label padding a button assumes. */
+.app-header__actions svg,
+.app-brand__mark svg {
   display: block;
 }
 
@@ -70,8 +71,6 @@
   border-radius: var(--p-border-radius-md);
   background: var(--p-primary-color);
   color: var(--p-primary-contrast-color);
-  font-size: 1.25rem;
-  font-weight: 700;
 }
 
 .app-brand__text {

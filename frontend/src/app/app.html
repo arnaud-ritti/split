@@ -3,7 +3,17 @@
 <header class="app-header">
   <div class="app-header__inner">
     <a class="app-brand" routerLink="/" [attr.aria-label]="'nav.home' | t">
-      <span class="app-brand__mark" aria-hidden="true">÷</span>
+      <span class="app-brand__mark" aria-hidden="true">
+        <!-- Drawn rather than the ÷ glyph: a glyph centres on its line box, which sits
+             above its ink, so the mark rendered low — by a different amount per font. -->
+        <svg viewBox="0 0 16 16" width="20" height="20" focusable="false">
+          <g fill="currentColor">
+            <circle cx="8" cy="4" r="1.5" />
+            <rect x="2.5" y="7.2" width="11" height="1.6" rx="0.8" />
+            <circle cx="8" cy="12" r="1.5" />
+          </g>
+        </svg>
+      </span>
       <span class="app-brand__text">
         <span class="app-brand__name">{{ 'app.name' | t }}</span>
         <span class="app-brand__tagline">{{ 'app.tagline' | t }}</span>
